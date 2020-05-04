@@ -19,7 +19,7 @@ class Bot {
 
         this.vk = new VK({
             token: config.vk.token,
-            pollingGroupId: config.vk.group_id
+            pollingGroupId: config.vk.group_id || undefined
         });
 
         this.modules = []
