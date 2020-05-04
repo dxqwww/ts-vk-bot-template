@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "resolveJsonModule": true, 
+    "outDir": "build",   
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}
