@@ -1,119 +1,174 @@
-# Typescript шаблон для создания ботов ВКонтакте
-Простенький шаблон для создания ботов Вконтакте основанный на модуле [vk-io](https://github.com/negezor/vk-io/)
+# TypeScript шаблон для создания ботов ВК
+Этот шаблон - удобная оболочка для создания ботов ВК. Главным преимуществом является модульность и поддержка ООП.
 
-# Установка
-Перед тем как использовать данный шаблон, необходимо установить сам typscript.
+Данный шаблон использует библиотеку [vk-io](https://github.com/negezor/vk-io/)
 
-```
-npm install typescript -g
-```
+# Установка и конфигурация
 
-После его установки необходимо склонировать этот репозиторий к себе локально
+Перед установкой убедитесь, что у вас установлен компилятор `typescript` :D
 
 ```
-git clone https://github.com/MiniK1337/ts-vk-bot-template
+npm install -g typescript
 ```
 
-Теперь переходим в папку, куда склонировали репозиторий и устанавливаем все необходимые зависимости.
+## Установка
+Чтобы начать использовать шаблон необходимо клонировать этот репозиторий к себе и установить все зависимости:
 
 ```
+git clone https://github.com/SweetDreamzZz/ts-vk-bot-template
 npm install
 ```
 
-### Файл конфигурации
-После клонирования репозитория и установок зависимостей, в папке с репозиторием создаем файл config.json и заполняем его:
+## Файл конфигурации
+
+В главной директории шаблона присутствует файл `config.json.template`, его структура:
 
 ```js
 {
     "vk": {
-        "token": "TOKEN", // Сюда вставляем ваш токен (можно использовать как токен юзера, так и группы)
-        "group_id": null // Сюда прописываем id вашей группы (если токен юзера - оставляем значение null)
+        "token": "YOUR_TOKEN",
+        "group_id": "YOUR_GROUP_ID",
+        "api_version": "YOUR_API_VERSION"
     }
 }
 ```
 
-### Компиляция и запуск
-В той же папке в репозиторием прописываем:
+Меняем данные на свои и переименовываем файл в `config.json`
+
+# Билд и запуск
+
+Билдим наш проект и запускаем!
 
 ```
+npm run-script build
 npm start
 ```
 
-Если всё запустилось и работает, в консоле должно написать "Started!"
+или одной командой
 
-# Использование
-Данная имплементация работает на модулях, в папке /src/modules содержаться все модули которые будет подгружать бот.
-Каждый модуль предсталвяет собой отдельный класс, в котором происходит инициализация доступных ему команд. Это очень удобно, в том плане, что можно создавать отдельный блоки команд, которые никак не будут пересекаться с остальными, а значит и не будет никаких внутренних конфликтов.
+```
+npm run-script build && npm start
+```
 
-Для примера возьмем стартовый, доступный после клонирования, модуль Test из данного репозитория:
+Если в консоле появилась надпись `Started!`, значит всё работает. Теперь можно выключать бота и переходить к разбору структуры.
+
+# Структура шаблона
+
+Основная директория бота `src`, в ней находится весь исходный код.
+
+## Модули
+
+Данная имплементация работает на модулях, в папке `/modules` содержаться все модули, которые будет подгружать бот.
+Каждый модуль предсталвяет собой отдельный класс, в котором происходит инициализация доступных ему команд. Это может быть удобно, чтобы объединять команды в блоки и давать им общий функционал.
+
+Для примера возьмем стартовый, доступный после клонирования, модуль `HelloModule`, который находится здесь `modules/Hello/hello.ts`:
+
 ```ts
-import { Module } from "../../Module";
-import { Bot } from "../../Bot";
+import { FactoryModuleOptions, Module } from "@Main/module";
 
 import {
-    TestCommand
-} from "./commands";
+    HelloCommand
+} from '@Main/modules/Hello/commands'
 
-class Test extends Module {
-    bot: Bot;
-    constructor(bot: Bot) {
-        super(bot);
+/*
+ * Имя для текущего модуля
+*/
+export type HelloModuleName = "Hello module";
 
-        this.bot = bot;
+export type HelloModuleOptions = FactoryModuleOptions<HelloModuleName>
 
-        this.initCommands([
-            new TestCommand(this)
-        ]);
-    }
-}
 
-export {
-    Test
-}
-```
+/*
+ * Главный класс модуля
+*/
+export class HelloModule extends Module<
+    HelloModuleName
+> {
+    public constructor({ ...options }: HelloModuleOptions) {
+        super({
+            name: "Hello module",
 
-Как уже говорил ранее, каждый модуль представляет собой инициализацию команд, из каждой такой команды можно обратно получить доступ к модулю, что позволяет делать общий функционал для опредленных наборов команд.
-
-Теперь разберем сами команды, они находятся в папке /{module_name}/commands, в пример возьмем одну их них - TestCommand, которая уже имеется в нашем модуле.
-
-```ts
-import { Command } from "../../../Command";
-import { Module } from "../../../Module";
-
-export class TestCommand extends Command {
-    constructor(module: Module) {
-        super(module);
-
-        this.setHearCondition(/(!|\.|\/)?ping/i);
-        
-        this.setCallback(context => {
-            context.send('pong');
+            ...options
         });
+
+        /*
+         * Объявление доступных для текущего модуля команд 
+        */
+        this.setCommands(
+            HelloCommand
+        );
     }
 }
 ```
-Как можно увидеть, для каждой команды существует условие для её вызова и сама callback функция команды.
-В данном примере, прослушкой выступает регулярное выражение, а callback фукнция вызывает метод send, который отправлеят сообщение.
 
-Теперь если написать нашему боту: !ping .ping /ping ping - он ответит pong
+### setCommands
 
-![Пример работы команды](https://sun9-20.userapi.com/c206824/v206824015/11121e/UrTei9sARcM.jpg)
-
-Немного пройдемся по методам, которые используются при создании команды
-
-### setHearCondtition
-Устанавливает условие для прослушки данной команды. Может быть как callback функцией, так и регулярным выражением.
+Основной метод, который можно использовать в каждом модуле. Устанавливает доступные для текущего модуля команды.
 
 ```ts
-setHearCondition(hearCondition: ((context: MessageContext) => boolean) | RegExp)
+public setCommands(...commands: Constructor<Command>[]): void
 ```
 
-### setCallback
-Устанавливает callback функцию, которая будет вызываться каждый раз, когда будет срабатывать условие для прослушки.
+## Команды
+
+Все команды расположены в директории `./commands` каждого модуля. Разберем уже готовой команды `HelloCommand`, нашего модуля `HelloModule`, которая находится здесь `modules/Hello/commands/hello.ts`:
 
 ```ts
-setCallback(callback: (context: MessageContext) => void)
+import { Command, FactoryCommandOptions } from '@Main/command';
+
+import { HelloModule } from '@Main/modules/Hello';
+
+export type HelloCommandOptions = FactoryCommandOptions<HelloModule>;
+
+/*
+ * Класс команды
+*/
+export class HelloCommand extends Command<
+    HelloModule
+> {
+    public constructor({ ...options }: HelloCommandOptions) {
+        super({ ...options });
+
+        /*
+         * Установка прослушки для текущей команды
+        */
+        this.setHearCondition((context, next) => {
+            const textRegExp = /^(!|\.|\/)ping$/i;
+
+            if (!textRegExp.test(context.text || null))
+                return;
+
+            return next();
+        });
+        
+        /*
+         * Установка нашей callback функции, в случае если прослушка сработала.
+        */
+        this.setCallback(context => (
+            context.send("pong")
+        ));
+    }
+}
 ```
 
-# Заключение
-По итогу мы получаем очень удобную обертку над vk-io. Вот и сказочке конец, а кто читал тот молодец :D
+У каждой команды есть два основных метода:
+
+### setHearCondition 
+Устанавливает условие для вызова `callback` функции. В качестве аргумента может принимать `Middleware` или `RegExp`.
+
+```ts
+protected setHearCondition(hearCondition: CommandHearCondition<T>): void
+```
+
+### setCallback 
+Устанавливает `callback` для команды. В качестве аргумента принимает `Middleware`.
+
+```ts
+protected setCallback(callback: CommandCallback<T>): void
+```
+
+# Результат
+
+Запускаем бота и проверяем его работу. Теперь если написать нашему боту `!ping` - он ответит `pong`:
+
+![Пример работы команды](https://sun9-55.userapi.com/impf/OkX3dLy8nEvgXQPUfrcOMnpP6ifE_44KM3WlHg/yXDJgE10XwI.jpg?size=192x124&quality=96&sign=8203a19590404c72bf303c80c6539f23&type=album)

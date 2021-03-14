@@ -1,0 +1,7 @@
+{
+    "vk": {
+        "token": "YOUR_TOKEN",
+        "group_id": "YOUR_GROUP_ID",
+        "api_version": "YOUR_API_VERSION"
+    }
+}
