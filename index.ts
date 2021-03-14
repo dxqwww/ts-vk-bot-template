@@ -1,5 +1,10 @@
-import config from "./config.json";
-import { Bot } from "./src/Bot";
+import { Bot } from '@Main/bot';
+import config from '@Config';
 
-const bot = new Bot(config)
-bot.start();
+const main = async () => {
+    const bot = new Bot({ config });
+
+    await bot.start();
+};
+
+main();

@@ -1,0 +1,1 @@
+export { HelloCommand } from './hello'

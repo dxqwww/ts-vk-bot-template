@@ -1,10 +1,11 @@
 {
-  "name": "asb",
-  "version": "1.0.0",
+  "name": "ts-vk-bot-template",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node ./build"
+    "start": "node ./dist",
+    "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +13,8 @@
   "dependencies": {
     "@types/node": "^13.13.4",
     "vk-io": "^4.0.0-rc.30"
+  },
+  "devDependencies": {
+    "tscpaths": "0.0.9"
   }
 }

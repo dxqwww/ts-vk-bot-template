@@ -2,10 +2,16 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "CommonJS",
+    "moduleResolution": "Node",
     "esModuleInterop": true,
     "resolveJsonModule": true, 
-    "outDir": "build",   
+    "outDir": "dist",   
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "baseUrl": ".",
+    "paths": {
+      "@Config": ["config.json"],
+      "@Main/*": ["src/bot/*"],
+      "@Utils/*": ["src/utils/*"]
+    }
   }
 }
