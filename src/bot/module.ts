@@ -1,54 +1,68 @@
-import { MessageContext } from "vk-io";
+import { MessageContext, ContextDefaultState } from "vk-io";
 
 import { Bot } from "@Main/bot";
 import { Command } from "@Main/command";
 import { Constructor } from '@Main/types';
 
-export type ModuleCheckAccess<T extends MessageContext = MessageContext> = (context: T) => boolean | Promise<boolean>;
-
 export interface IModuleOptions<
-    Name extends string = string,
-
-    B extends Bot = Bot,
-    T extends MessageContext = MessageContext
+    S = ContextDefaultState
 > {
-    message: T;
+    message: MessageContext<S>
 
-    bot: B;
-    name: Name;
+    bot: Bot;
 }
 
-export type FactoryModuleOptions<Name extends string> = IModuleOptions<Name>;
+export type FactoryModuleOptions<S = ContextDefaultState> = IModuleOptions<S>;
 
+export type ModuleCheckAccess<T extends MessageContext = MessageContext> = (context: T) => boolean | Promise<boolean>;
+
+/**
+ * Main Module class
+ */
 export class Module<
-    Name extends string = string,
-
-    B extends Bot = Bot,
-    T extends MessageContext = MessageContext
+    S = ContextDefaultState
 > {
 
+    /**
+     * The Bot instance
+     */
     public bot: Bot;
 
-    public name: Name;
+    /**
+     * Current received message
+     */
+    protected message: MessageContext<S>;
 
-    protected message: T;
-
+    /**
+     * Module access check
+     */
     private checkAccess!: ModuleCheckAccess;
 
+    /**
+     * List of all module commands
+     */
     private commands: Constructor<Command>[];
 
-    public constructor({ ...options }: IModuleOptions<Name, B, T>) {
+    /**
+     * Constructor
+     */
+    public constructor({ ...options }: IModuleOptions<S>) {
         this.bot = options.bot;
         this.message = options.message;
-        this.name = options.name;
     }
 
+    /**
+     * Sets list of module commands
+     */
     public setCommands(...commands: Constructor<Command>[]): void {
         this.commands = [
             ...commands
         ];
     }
 
+    /**
+     * Looking for a command that is being listened
+     */
     public async findCommand(): Promise<Command> {
         if (!this.contextHasAccess())
             return;
@@ -64,7 +78,17 @@ export class Module<
             return command;
         }
     }
+    
+	/**
+	 * Returns custom tag
+	 */
+     public get [Symbol.toStringTag](): string {
+		return this.constructor.name;
+	}
 
+    /**
+     * Initializes the single module command
+     */
     private initCommand(Command: Constructor<Command>): Command {
         return new Command({
             module: this,
@@ -72,10 +96,16 @@ export class Module<
         });
     }
 
+    /**
+     * Sets the module check access
+     */
     private setCheckAccess(checkAccess: ModuleCheckAccess): void {
         this.checkAccess = checkAccess;
     }
 
+    /**
+     * Checks if the context has access
+     */
     private async contextHasAccess(): Promise<boolean> {
         return !!this.checkAccess && this.checkAccess(this.message);
     }

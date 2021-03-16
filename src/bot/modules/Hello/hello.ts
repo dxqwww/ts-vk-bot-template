@@ -2,21 +2,13 @@ import { FactoryModuleOptions, Module } from "@Main/module";
 
 import {
     HelloCommand
-} from '@Main/modules/Hello/commands'
+} from '@Main/modules/Hello/commands';
 
-export type HelloModuleName = "Hello module";
+export type HelloModuleOptions = FactoryModuleOptions;
 
-export type HelloModuleOptions = FactoryModuleOptions<HelloModuleName>
-
-export class HelloModule extends Module<
-    HelloModuleName
-> {
+export class HelloModule extends Module {
     public constructor({ ...options }: HelloModuleOptions) {
-        super({
-            name: "Hello module",
-
-            ...options
-        });
+        super({ ...options });
 
         this.setCommands(
             HelloCommand

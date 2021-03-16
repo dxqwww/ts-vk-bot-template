@@ -4,7 +4,9 @@ import config from '@Config';
 const main = async () => {
     const bot = new Bot({ config });
 
-    await bot.start();
+    bot.start()
+    .then(() => console.log('Started!'))
+    .catch(console.error);
 };
 
 main();

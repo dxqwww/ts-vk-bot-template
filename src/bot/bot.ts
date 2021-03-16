@@ -13,18 +13,33 @@ export interface IBotOptions<
     config: Config;
 }
 
+/**
+ * Main Bot class
+ */
 export class Bot<
     T extends MessageContext = MessageContext,
 
     Config extends IBotConfig = IBotConfig,
 > {
 
+    /**
+     * Config
+     */
     public config: IBotConfig;
 
+    /**
+     * Main vk-io instance
+     */
     public vk: VK;
 
+    /**
+     * List of all modules
+     */
     private modules: Constructor<Module>[];
 
+    /**
+     * Constructor
+     */
     public constructor({ ...options }: IBotOptions<Config>) {
         this.config = options.config;
 
@@ -54,20 +69,39 @@ export class Bot<
         });
     }
 
+    /**
+     * Starts to poll server
+     */
     public start(): Promise<void> {
         return this.vk.updates.start();
     }
 
+    /**
+     * Stopping gets updates
+     */
     public stop(): Promise<void> {
         return this.vk.updates.stop();
     }
 
+	/**
+	 * Returns custom tag
+	 */
+     public get [Symbol.toStringTag](): string {
+		return this.constructor.name;
+	}
+
+    /**
+     * Sets list of all modules
+     */
     protected setModules(...modules: Constructor<Module>[]): void {
         this.modules = [
             ...modules
         ];
     } 
 
+    /**
+     * Initializes the single module
+     */
     protected initModule(Module: Constructor<Module>, context: T): Module {
         return new Module({
             bot: this,

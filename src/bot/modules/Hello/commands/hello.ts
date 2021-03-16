@@ -2,7 +2,8 @@ import { Command, FactoryCommandOptions } from '@Main/command';
 
 import { HelloModule } from '@Main/modules/Hello';
 
-export type HelloCommandOptions = FactoryCommandOptions<HelloModule>;
+export type HelloCommandOptions = 
+    FactoryCommandOptions<HelloModule>;
 
 export class HelloCommand extends Command<
     HelloModule

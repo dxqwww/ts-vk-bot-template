@@ -1,53 +1,71 @@
-import { MessageContext } from "vk-io";
+import { MessageContext, ContextDefaultState } from "vk-io";
 
 import { Module } from "@Main/module";
 
 import { Middleware, MiddlewareDispatcher } from '@Utils/middleware';
 
-export type CommandHearCondition<T> = Middleware<T> | RegExp;
-export type CommandCallback<T> = Middleware<T>
+export type CommandHearCondition<S = ContextDefaultState> = Middleware<MessageContext<S>> | RegExp;
+export type CommandCallback<S = ContextDefaultState> = Middleware<MessageContext<S>>
 
 export interface ICommandOptions<
     M extends Module = Module,
-    T extends MessageContext = MessageContext
+    S = ContextDefaultState
 > {
-    message: T;
-
-    module: M;
+    module: M
+    message: MessageContext<S>
 }
 
-export type FactoryCommandOptions<M extends Module> = ICommandOptions<M>;
+export type FactoryCommandOptions<
+    M extends Module = Module,
+    S = ContextDefaultState
+> = ICommandOptions<M, S>;
 
+/**
+ * Main Command class
+ */
 export class Command<
     M extends Module = Module,
-    T extends MessageContext = MessageContext
+    S = ContextDefaultState
 > {
     
+    /**
+     * The module instance of command
+     */
     public module: M;
 
-    protected message: T;
+    /**
+     * Current received message
+     */
+    protected message: MessageContext<S>
 
-    private hearCondition!: CommandHearCondition<T>;
+    /**
+     * Condition for listening of command
+     */
+    private hearCondition!: CommandHearCondition<S>;
 
-    private callback!: CommandCallback<T>;
+    /**
+     * Callback function of command
+     */
+    private callback!: CommandCallback<S>;
 
-    private dispatcher: MiddlewareDispatcher<T>;
+    /**
+     * Middleware dispatcher instance
+     */
+    private dispatcher: MiddlewareDispatcher<MessageContext<S>>;
 
-    public constructor({ ...options }: ICommandOptions<M, T>) {
+    /**
+     * Constructor
+     */
+    public constructor({ ...options }: ICommandOptions<M, S>) {
         this.module = options.module;
         this.message = options.message;
 
-        this.dispatcher = new MiddlewareDispatcher<T>();
+        this.dispatcher = new MiddlewareDispatcher<MessageContext<S>>();
     }
 
-    protected setHearCondition(hearCondition: CommandHearCondition<T>): void {
-        this.hearCondition = hearCondition;
-    }
-
-    protected setCallback(callback: CommandCallback<T>): void {
-        this.callback = callback;
-    }
-
+    /**
+     * Checks the hear condition
+     */
     public async checkHearCondition(): Promise<boolean> {
         if (!this.hearCondition)
             return;
@@ -60,10 +78,34 @@ export class Command<
         return !this.dispatcher.hasMiddlewares();
     }
 
+    /**
+     * Invokes the callback
+     */
     public async invokeCallback(): Promise<void> {
         if (this.dispatcher.hasMiddlewares())
             this.dispatcher.clearMiddlewares();
 
         await this.dispatcher.dispatchMiddleware(this.message, this.callback);  
+    }
+
+	/**
+	 * Returns custom tag
+	 */
+     public get [Symbol.toStringTag](): string {
+		return this.constructor.name;
+	}
+
+    /**
+     * Sets the hear condition
+     */
+     protected setHearCondition(hearCondition: CommandHearCondition<S>): void {
+        this.hearCondition = hearCondition;
+    }
+
+    /**
+     * Sets the callback
+     */
+    protected setCallback(callback: CommandCallback<S>): void {
+        this.callback = callback;
     }
 }
