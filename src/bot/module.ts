@@ -4,6 +4,8 @@ import { Bot } from "@Main/bot";
 import { Command } from "@Main/command";
 import { Constructor } from '@Main/types';
 
+import { Middleware, MiddlewareDispatcher } from "@Utils/middleware";
+
 export interface IModuleOptions<
     S = ContextDefaultState
 > {
@@ -14,7 +16,7 @@ export interface IModuleOptions<
 
 export type FactoryModuleOptions<S = ContextDefaultState> = IModuleOptions<S>;
 
-export type ModuleCheckAccess<T extends MessageContext = MessageContext> = (context: T) => boolean | Promise<boolean>;
+export type ModuleCheckAccess<S = ContextDefaultState> = Middleware<MessageContext<S>>
 
 /**
  * Main Module class
@@ -36,7 +38,7 @@ export class Module<
     /**
      * Module access check
      */
-    private checkAccess!: ModuleCheckAccess;
+    private access!: ModuleCheckAccess<S>;
 
     /**
      * List of all module commands
@@ -44,11 +46,18 @@ export class Module<
     private commands: Constructor<Command>[];
 
     /**
+     * Middleware dispatcher instance
+     */
+     private dispatcher: MiddlewareDispatcher<MessageContext<S>>;
+
+    /**
      * Constructor
      */
     public constructor({ ...options }: IModuleOptions<S>) {
         this.bot = options.bot;
         this.message = options.message;
+
+        this.dispatcher = new MiddlewareDispatcher<MessageContext<S>>()
     }
 
     /**
@@ -64,7 +73,9 @@ export class Module<
      * Looking for a command that is being listened
      */
     public async findCommand(): Promise<Command> {
-        if (!this.contextHasAccess())
+        const cHasAccess = await this.contextHasAccess();
+
+        if (!cHasAccess)
             return;
 
         for (const Command of this.commands) {
@@ -79,6 +90,13 @@ export class Module<
         }
     }
     
+    /**
+     * Sets the module check access
+     */
+     public setAccess(access: ModuleCheckAccess<S>): void {
+        this.access = access;
+    }
+
 	/**
 	 * Returns custom tag
 	 */
@@ -90,23 +108,26 @@ export class Module<
      * Initializes the single module command
      */
     private initCommand(Command: Constructor<Command>): Command {
+        if (this.dispatcher.hasMiddlewares)
+            this.dispatcher.clearMiddlewares();
+
         return new Command({
             module: this,
+            dispatcher: this.dispatcher,
+
             message: this.message
         });
-    }
-
-    /**
-     * Sets the module check access
-     */
-    private setCheckAccess(checkAccess: ModuleCheckAccess): void {
-        this.checkAccess = checkAccess;
     }
 
     /**
      * Checks if the context has access
      */
     private async contextHasAccess(): Promise<boolean> {
-        return !!this.checkAccess && this.checkAccess(this.message);
+        if (!this.access)
+            return;
+
+        await this.dispatcher.dispatchMiddleware(this.message, this.access);
+
+        return !this.dispatcher.hasMiddlewares;
     }
 }

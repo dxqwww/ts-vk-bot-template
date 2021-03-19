@@ -1,25 +1,43 @@
 import { Command, FactoryCommandOptions } from '@Main/command';
 
-import { HelloModule } from '@Main/modules/Hello';
+import { HelloModule, IHelloModuleContext } from '@Main/modules/Hello';
 
+/**
+ * Опции команды
+ */
 export type HelloCommandOptions = 
-    FactoryCommandOptions<HelloModule>;
+    FactoryCommandOptions<HelloModule, IHelloModuleContext>;
 
+/**
+ * Команда модуля. Наследуется от Command
+ * 
+ * @argument M — Модуль, к которому подключается команда.
+ * @argument S - Дополнительный контекст, который хранится в state
+ */
 export class HelloCommand extends Command<
-    HelloModule
+    HelloModule,
+    IHelloModuleContext
 > {
     public constructor({ ...options }: HelloCommandOptions) {
         super({ ...options });
 
+        /**
+         * Установка прослушки для текущей команды
+         */
         this.setHearCondition((context, next) => {
-            const textRegExp = /^(!|\.|\/)ping$/i;
+            const { moduleAccess } = context.state;
 
-            if (!textRegExp.test(context.text || null))
+            const cRegEx = /^ping$/i;
+
+            if (!cRegEx.test(moduleAccess.unprefixed))
                 return;
 
             return next();
         });
-
+        
+        /**
+         * Установка callback`а для текущей команды
+         */
         this.setCallback(context => (
             context.send("pong")
         ));

@@ -4,12 +4,45 @@ import {
     HelloCommand
 } from '@Main/modules/Hello/commands';
 
-export type HelloModuleOptions = FactoryModuleOptions;
+export interface IHelloModuleContext {
+    moduleAccess: {
+        unprefixed: string;
+    };
+}
 
-export class HelloModule extends Module {
+/**
+ * Опции для текущего модуля
+ */
+export type HelloModuleOptions = FactoryModuleOptions<IHelloModuleContext>;
+
+/**
+ * Главный класс модуля. Наследуется от Module
+ */
+export class HelloModule extends Module<
+    IHelloModuleContext
+> {
     public constructor({ ...options }: HelloModuleOptions) {
         super({ ...options });
 
+        /**
+         * Установка проверки к модулю
+         */
+        this.setAccess((context, next) => {
+            const tRegEx = /^hello/i;
+
+            if (!tRegEx.test(context.text))
+                return;
+
+            context.state.moduleAccess = {
+                unprefixed: context.text.replace(tRegEx, '').trim()
+            }
+
+            return next();
+        });
+
+        /**
+         * Установка команд для модуля
+         */
         this.setCommands(
             HelloCommand
         );

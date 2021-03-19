@@ -20,7 +20,7 @@ export class MiddlewareDispatcher<T> {
     /**
      * Checks if there are middlwares
      */
-    public hasMiddlewares(): boolean {
+    public get hasMiddlewares(): boolean {
         return !!this.middlewares.length;
     }
 

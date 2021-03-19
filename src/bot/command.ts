@@ -2,7 +2,7 @@ import { MessageContext, ContextDefaultState } from "vk-io";
 
 import { Module } from "@Main/module";
 
-import { Middleware, MiddlewareDispatcher } from '@Utils/middleware';
+import { Middleware, MiddlewareDispatcher, MiddlewareReturn } from '@Utils/middleware';
 
 export type CommandHearCondition<S = ContextDefaultState> = Middleware<MessageContext<S>> | RegExp;
 export type CommandCallback<S = ContextDefaultState> = Middleware<MessageContext<S>>
@@ -12,7 +12,9 @@ export interface ICommandOptions<
     S = ContextDefaultState
 > {
     module: M
-    message: MessageContext<S>
+    message: MessageContext<S>,
+
+    dispatcher: MiddlewareDispatcher<MessageContext<S>>;
 }
 
 export type FactoryCommandOptions<
@@ -60,7 +62,7 @@ export class Command<
         this.module = options.module;
         this.message = options.message;
 
-        this.dispatcher = new MiddlewareDispatcher<MessageContext<S>>();
+        this.dispatcher = options.dispatcher;
     }
 
     /**
@@ -75,17 +77,17 @@ export class Command<
 
         await this.dispatcher.dispatchMiddleware(this.message, this.hearCondition);
 
-        return !this.dispatcher.hasMiddlewares();
+        return !this.dispatcher.hasMiddlewares;
     }
 
     /**
      * Invokes the callback
      */
-    public async invokeCallback(): Promise<void> {
-        if (this.dispatcher.hasMiddlewares())
+    public async invokeCallback(): Promise<MiddlewareReturn> {
+        if (this.dispatcher.hasMiddlewares)
             this.dispatcher.clearMiddlewares();
 
-        await this.dispatcher.dispatchMiddleware(this.message, this.callback);  
+        return this.dispatcher.dispatchMiddleware(this.message, this.callback);  
     }
 
 	/**
