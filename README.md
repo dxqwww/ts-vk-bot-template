@@ -68,32 +68,49 @@ import { FactoryModuleOptions, Module } from "@Main/module";
 
 import {
     HelloCommand
-} from '@Main/modules/Hello/commands'
+} from '@Main/modules/Hello/commands';
 
-/*
- * Имя для текущего модуля
-*/
-export type HelloModuleName = "Hello module";
+export interface IHelloModuleContext {
+    moduleAccess: {
+        unprefixed: string;
+    };
+}
 
-export type HelloModuleOptions = FactoryModuleOptions<HelloModuleName>
+/**
+ * Опции для текущего модуля
+ */
+export type HelloModuleOptions = FactoryModuleOptions<IHelloModuleContext>;
 
-
-/*
- * Главный класс модуля
-*/
+/**
+ * Главный класс модуля. Наследуется от Module
+ * 
+ * @argument S - Дополнительный контекст, который хранится в state
+ */
 export class HelloModule extends Module<
-    HelloModuleName
+    IHelloModuleContext
 > {
     public constructor({ ...options }: HelloModuleOptions) {
-        super({
-            name: "Hello module",
+        super({ ...options });
 
-            ...options
+        /**
+         * Установка проверки к модулю
+         */
+        this.setAccess((context, next) => {
+            const tRegEx = /^hello/i;
+
+            if (!tRegEx.test(context.text))
+                return;
+
+            context.state.moduleAccess = {
+                unprefixed: context.text.replace(tRegEx, '').trim()
+            }
+
+            return next();
         });
 
-        /*
-         * Объявление доступных для текущего модуля команд 
-        */
+        /**
+         * Установка команд для модуля
+         */
         this.setCommands(
             HelloCommand
         );
@@ -109,6 +126,12 @@ export class HelloModule extends Module<
 public setCommands(...commands: Constructor<Command>[]): void
 ```
 
+Также можно установить middleware для проверки доступа к модулю, в нашем примере идёт проверка на префикс `hello` в начале каждого сообщения, после чего обновления контекста сообщения, и дальнейшая его передача в контекст команд этого модуля. 
+
+```ts
+public setAccess(access: ModuleCheckAccess): void
+```
+
 ## Команды
 
 Все команды расположены в директории `./commands` каждого модуля. Разберем уже готовой команды `HelloCommand`, нашего модуля `HelloModule`, которая находится здесь `modules/Hello/commands/hello.ts`:
@@ -116,34 +139,44 @@ public setCommands(...commands: Constructor<Command>[]): void
 ```ts
 import { Command, FactoryCommandOptions } from '@Main/command';
 
-import { HelloModule } from '@Main/modules/Hello';
+import { HelloModule, IHelloModuleContext } from '@Main/modules/Hello';
 
-export type HelloCommandOptions = FactoryCommandOptions<HelloModule>;
+/**
+ * Опции команды
+ */
+export type HelloCommandOptions = 
+    FactoryCommandOptions<HelloModule, IHelloModuleContext>;
 
-/*
- * Класс команды
-*/
+/**
+ * Команда модуля. Наследуется от Command
+ * 
+ * @argument M — Модуль, к которому подключается команда.
+ * @argument S — Дополнительный контекст, который хранится в state
+ */
 export class HelloCommand extends Command<
-    HelloModule
+    HelloModule,
+    IHelloModuleContext
 > {
     public constructor({ ...options }: HelloCommandOptions) {
         super({ ...options });
 
-        /*
+        /**
          * Установка прослушки для текущей команды
-        */
+         */
         this.setHearCondition((context, next) => {
-            const textRegExp = /^(!|\.|\/)ping$/i;
+            const { moduleAccess } = context.state;
 
-            if (!textRegExp.test(context.text || null))
+            const cRegEx = /^ping$/i;
+
+            if (!cRegEx.test(moduleAccess.unprefixed))
                 return;
 
             return next();
         });
         
-        /*
-         * Установка нашей callback функции, в случае если прослушка сработала.
-        */
+        /**
+         * Установка callback`а для текущей команды
+         */
         this.setCallback(context => (
             context.send("pong")
         ));
@@ -169,6 +202,6 @@ protected setCallback(callback: CommandCallback<T>): void
 
 # Результат
 
-Запускаем бота и проверяем его работу. Теперь если написать нашему боту `!ping` - он ответит `pong`:
+Запускаем бота и проверяем его работу. Теперь если написать нашему боту сообщение с префиксом `hello` и дальнейшей командой `ping` — он ответит нам `pong`:
 
-![Пример работы команды](https://sun9-55.userapi.com/impf/OkX3dLy8nEvgXQPUfrcOMnpP6ifE_44KM3WlHg/yXDJgE10XwI.jpg?size=192x124&quality=96&sign=8203a19590404c72bf303c80c6539f23&type=album)
+![Пример работы команды](https://sun9-57.userapi.com/impf/Q9g5t4pSp9fcW1WSDJ4MHwyJ8e48STJB3m5kag/D3clL5_1FB4.jpg?size=203x111&quality=96&sign=a6d7769f8fe1c30fdc36eeed8be9f986&type=album)
