@@ -17,6 +17,8 @@ export type HelloModuleOptions = FactoryModuleOptions<IHelloModuleContext>;
 
 /**
  * Главный класс модуля. Наследуется от Module
+ * 
+ * @argument S - Дополнительный контекст, который хранится в state
  */
 export class HelloModule extends Module<
     IHelloModuleContext

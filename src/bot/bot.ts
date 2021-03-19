@@ -14,7 +14,7 @@ export interface IBotOptions<
 }
 
 /**
- * Main Bot class
+ * Главный класс бота
  */
 export class Bot<
     T extends MessageContext = MessageContext,
@@ -23,17 +23,17 @@ export class Bot<
 > {
 
     /**
-     * Config
+     * Конфигурация бота
      */
     public config: IBotConfig;
 
     /**
-     * Main vk-io instance
+     * Инстанция vk-io
      */
     public vk: VK;
 
     /**
-     * List of all modules
+     * Список всех доступных модулей
      */
     private modules: Constructor<Module>[];
 
@@ -70,28 +70,28 @@ export class Bot<
     }
 
     /**
-     * Starts to poll server
+     * Запускается прослушку сообщений
      */
     public start(): Promise<void> {
         return this.vk.updates.start();
     }
 
     /**
-     * Stopping gets updates
+     * Прекращает получение обновлений
      */
     public stop(): Promise<void> {
         return this.vk.updates.stop();
     }
 
 	/**
-	 * Returns custom tag
+	 * Возвращает кастомный тег
 	 */
      public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}
 
     /**
-     * Sets list of all modules
+     * Устанавливает список переданных моудлей
      */
     protected setModules(...modules: Constructor<Module>[]): void {
         this.modules = [
@@ -100,7 +100,7 @@ export class Bot<
     } 
 
     /**
-     * Initializes the single module
+     * Инициализирует модуль с указанным контекстом
      */
     protected initModule(Module: Constructor<Module>, context: T): Module {
         return new Module({

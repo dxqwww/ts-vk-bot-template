@@ -1,5 +1,8 @@
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
+/**
+ * Интерфейс конфигурации бота
+ */
 export interface IBotConfig {
     vk: {
         token: string;

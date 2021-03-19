@@ -12,7 +12,7 @@ export type HelloCommandOptions =
  * Команда модуля. Наследуется от Command
  * 
  * @argument M — Модуль, к которому подключается команда.
- * @argument S - Дополнительный контекст, который хранится в state
+ * @argument S — Дополнительный контекст, который хранится в state
  */
 export class HelloCommand extends Command<
     HelloModule,

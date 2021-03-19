@@ -19,34 +19,34 @@ export type FactoryModuleOptions<S = ContextDefaultState> = IModuleOptions<S>;
 export type ModuleCheckAccess<S = ContextDefaultState> = Middleware<MessageContext<S>>
 
 /**
- * Main Module class
+ * Главный класс модуля
  */
 export class Module<
     S = ContextDefaultState
 > {
 
     /**
-     * The Bot instance
+     * Инстанция Bot
      */
     public bot: Bot;
 
     /**
-     * Current received message
+     * Контекст только что полученного сообщения
      */
     protected message: MessageContext<S>;
 
     /**
-     * Module access check
+     * Middleware-функция, которая проверяет доступ к модулю
      */
     private access!: ModuleCheckAccess<S>;
 
     /**
-     * List of all module commands
+     * Список команд модуля
      */
     private commands: Constructor<Command>[];
 
     /**
-     * Middleware dispatcher instance
+     * Инстанция MiddlwareDispatcher
      */
      private dispatcher: MiddlewareDispatcher<MessageContext<S>>;
 
@@ -61,7 +61,7 @@ export class Module<
     }
 
     /**
-     * Sets list of module commands
+     * Устанавливает список переданных команд 
      */
     public setCommands(...commands: Constructor<Command>[]): void {
         this.commands = [
@@ -70,7 +70,7 @@ export class Module<
     }
 
     /**
-     * Looking for a command that is being listened
+     * Ищет команду, которая может быть прослушена с текущем контекстом сообщения
      */
     public async findCommand(): Promise<Command> {
         const cHasAccess = await this.contextHasAccess();
@@ -91,7 +91,7 @@ export class Module<
     }
     
     /**
-     * Sets the module check access
+     * Устанавливает Middleware-функцию, которая проверяет доступ к модулю
      */
      public setAccess(access: ModuleCheckAccess<S>): void {
         this.access = access;
@@ -105,7 +105,7 @@ export class Module<
 	}
 
     /**
-     * Initializes the single module command
+     * Инициализирует команду модуля
      */
     private initCommand(Command: Constructor<Command>): Command {
         if (this.dispatcher.hasMiddlewares)
@@ -120,7 +120,7 @@ export class Module<
     }
 
     /**
-     * Checks if the context has access
+     * Проверяет есть ли у контекста сообщения доуступ к модулю
      */
     private async contextHasAccess(): Promise<boolean> {
         if (!this.access)

@@ -23,7 +23,7 @@ export type FactoryCommandOptions<
 > = ICommandOptions<M, S>;
 
 /**
- * Main Command class
+ * Главный класс команды
  */
 export class Command<
     M extends Module = Module,
@@ -31,27 +31,27 @@ export class Command<
 > {
     
     /**
-     * The module instance of command
+     * Инстанция модуля команды
      */
     public module: M;
 
     /**
-     * Current received message
+     * Контекст только что полученного сообщения
      */
     protected message: MessageContext<S>
 
     /**
-     * Condition for listening of command
+     * Middleware-функция условия прослушки сообщения
      */
     private hearCondition!: CommandHearCondition<S>;
 
     /**
-     * Callback function of command
+     * Middleware-функция callback'а в случае, если прослушка сработает
      */
     private callback!: CommandCallback<S>;
 
     /**
-     * Middleware dispatcher instance
+     * Инстанция MiddlewareDispatcher
      */
     private dispatcher: MiddlewareDispatcher<MessageContext<S>>;
 
@@ -66,7 +66,7 @@ export class Command<
     }
 
     /**
-     * Checks the hear condition
+     * Проверяет может ли контекст быть прослушанным
      */
     public async checkHearCondition(): Promise<boolean> {
         if (!this.hearCondition)
@@ -81,7 +81,7 @@ export class Command<
     }
 
     /**
-     * Invokes the callback
+     * Вызывает middleware-функцию функцию callback'а
      */
     public async invokeCallback(): Promise<MiddlewareReturn> {
         if (this.dispatcher.hasMiddlewares)
@@ -98,14 +98,14 @@ export class Command<
 	}
 
     /**
-     * Sets the hear condition
+     * Устанавливает middleware-функцию для прослушки
      */
      protected setHearCondition(hearCondition: CommandHearCondition<S>): void {
         this.hearCondition = hearCondition;
     }
 
     /**
-     * Sets the callback
+     * Устанавливает middleware-функцию callback`а
      */
     protected setCallback(callback: CommandCallback<S>): void {
         this.callback = callback;
