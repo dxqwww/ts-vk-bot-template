@@ -38,7 +38,7 @@ export class Module<
     /**
      * Middleware-функция, которая проверяет доступ к модулю
      */
-    private access!: ModuleCheckAccess<S>;
+    private access: ModuleCheckAccess<S>;
 
     /**
      * Список команд модуля
@@ -124,7 +124,7 @@ export class Module<
      */
     private async contextHasAccess(): Promise<boolean> {
         if (!this.access)
-            return;
+            this.setAccess((_, next) => next());
 
         await this.dispatcher.dispatchMiddleware(this.message, this.access);
 

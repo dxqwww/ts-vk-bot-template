@@ -1,6 +1,6 @@
 import { Command, FactoryCommandOptions } from '@Main/command';
 
-import { HelloModule, IHelloModuleContext } from '@Main/modules/Hello';
+import { HelloModule, IHelloModuleContext } from '../';
 
 /**
  * Опции команды

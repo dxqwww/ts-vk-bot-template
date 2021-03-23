@@ -2,7 +2,7 @@ import { FactoryModuleOptions, Module } from "@Main/module";
 
 import {
     HelloCommand
-} from '@Main/modules/Hello/commands';
+} from './commands';
 
 export interface IHelloModuleContext {
     moduleAccess: {
