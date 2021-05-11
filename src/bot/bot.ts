@@ -22,11 +22,6 @@ export class Bot<
     Config extends IBotConfig = IBotConfig,
 > {
     /**
-     * Debug mode
-     */
-    public static debugMode = false;
-
-    /**
      * Конфигурация бота
      */
     public config: IBotConfig;

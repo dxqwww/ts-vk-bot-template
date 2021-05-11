@@ -1,6 +1,8 @@
 import chalk from 'chalk';
 
 export class SweetConsole {
+    private static debugMode: boolean = false;
+
     private static log(color: chalk.Chalk, type: string, message: string): typeof SweetConsole {
         const time = new Date().toLocaleString('ru-RU', {
            hour: 'numeric',
@@ -11,6 +13,10 @@ export class SweetConsole {
         console.log(`[${chalk.bold.white(time)}][${color.bold(type)}] ${color(message)}`);
 
         return SweetConsole;
+    }
+
+    public static setDebugMode(mode: boolean) {
+        SweetConsole.debugMode = mode;
     }
 
     public static Info(message: string): typeof SweetConsole {
@@ -26,6 +32,6 @@ export class SweetConsole {
     }
 
     public static Debug(message: string): typeof SweetConsole {
-        return SweetConsole.log(chalk.gray, `DEBUG`, message);
+        return SweetConsole.debugMode ? SweetConsole.log(chalk.gray, `DEBUG`, message) : SweetConsole;
     }
 }
