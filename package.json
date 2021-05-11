@@ -19,7 +19,8 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^13.13.4",
-    "vk-io": "^4.0.0-rc.30"
+    "chalk": "^4.1.1",
+    "vk-io": "^4.2.0"
   },
   "devDependencies": {
     "tscpaths": "0.0.9"

@@ -40,8 +40,7 @@ npm install
 Билдим наш проект и запускаем!
 
 ```
-npm run-script build
-npm start
+npm run build && npm start
 ```
 
 или одной командой

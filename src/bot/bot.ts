@@ -21,6 +21,10 @@ export class Bot<
 
     Config extends IBotConfig = IBotConfig,
 > {
+    /**
+     * Debug mode
+     */
+    public static debugMode = false;
 
     /**
      * Конфигурация бота
@@ -64,13 +68,18 @@ export class Bot<
 
                 return command.invokeCallback();
             }
-
-            return context.send("No available commands");
         });
     }
 
     /**
-     * Запускается прослушку сообщений
+     * Проверяет запущена ли прослушка
+     */
+    public get isStarted(): boolean {
+        return this.vk.updates.isStarted;
+    }
+
+    /**
+     * Запускаеет прослушку сообщений
      */
     public start(): Promise<void> {
         return this.vk.updates.start();
