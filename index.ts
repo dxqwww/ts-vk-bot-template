@@ -18,7 +18,6 @@ import config from '@Config';
         setTimeout(() => main(bot), 10e3);
     }
 
-    
     if (bot.isStarted)
         SweetConsole.Info(`Bot has started!`);
 })(new Bot({ config }));
