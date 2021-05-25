@@ -24,7 +24,7 @@ export class SweetConsole {
     }
 
     public static Warn(message: string): typeof SweetConsole {
-        return SweetConsole.log(chalk.yellow, `WARNING`, message);
+        return SweetConsole.log(chalk.yellow, `WARN`, message);
     }
 
     public static Error(message: string): typeof SweetConsole {

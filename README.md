@@ -3,14 +3,6 @@
 
 Данный шаблон использует библиотеку [vk-io](https://github.com/negezor/vk-io/)
 
-# Установка и конфигурация
-
-Перед установкой убедитесь, что у вас установлен компилятор `typescript` :D
-
-```
-npm install -g typescript
-```
-
 ## Установка
 Чтобы начать использовать шаблон необходимо клонировать этот репозиторий к себе и установить все зависимости:
 
@@ -49,133 +41,82 @@ npm run build && npm start
 npm run-script build && npm start
 ```
 
-Если в консоле появилась надпись `Started!`, значит всё работает. Теперь можно выключать бота и переходить к разбору структуры.
+Если в консоле появились логи об успешном старте бота, значит всё работает.
 
-# Структура шаблона
+![Успешный старт бота](https://sun9-33.userapi.com/impg/TOasq81qYMNTeEUZuO7cQAlj7TMMV684_WEcFA/xeaCdIzn70s.jpg?size=301x99&quality=96&sign=43e1950c087ce1fe40aed7ac54a5a361&type=album)
 
-Основная директория бота `src`, в ней находится весь исходный код.
+# Использование шаблона
+
+Все разобранные ниже примеры находятся в директории `/examples` данного репозитория
 
 ## Модули
 
-Данная имплементация работает на модулях, в папке `/modules` содержаться все модули, которые будет подгружать бот.
-Каждый модуль предсталвяет собой отдельный класс, в котором происходит инициализация доступных ему команд. Это может быть удобно, чтобы объединять команды в блоки и давать им общий функционал.
-
-Для примера возьмем стартовый, доступный после клонирования, модуль `HelloModule`, который находится здесь `modules/Hello/hello.ts`:
+Любой модуль наследуется от базового класса `Module`.
+В модуле происходит установка принадлежащих ему команд.
 
 ```ts
-import { FactoryModuleOptions, Module } from "@Main/module";
+import { Module, FactoryModuleOptions } from '@Main/module';
 
-import {
-    HelloCommand
-} from '@Main/modules/Hello/commands';
+import { HelloCommand } from './command';
 
-export interface IHelloModuleContext {
-    moduleAccess: {
-        unprefixed: string;
-    };
-}
+export type HelloModuleOptions = FactoryModuleOptions;
 
-/**
- * Опции для текущего модуля
- */
-export type HelloModuleOptions = FactoryModuleOptions<IHelloModuleContext>;
+export class HelloModule extends Module {
+  public constructor({ ...options }: HelloModuleOptions) {
+    super({ ...options });
 
-/**
- * Главный класс модуля. Наследуется от Module
- * 
- * @argument S - Дополнительный контекст, который хранится в state
- */
-export class HelloModule extends Module<
-    IHelloModuleContext
-> {
-    public constructor({ ...options }: HelloModuleOptions) {
-        super({ ...options });
-
-        /**
-         * Установка проверки к модулю
-         */
-        this.setAccess((context, next) => {
-            const tRegEx = /^hello/i;
-
-            if (!tRegEx.test(context.text))
-                return;
-
-            context.state.moduleAccess = {
-                unprefixed: context.text.replace(tRegEx, '').trim()
-            }
-
-            return next();
-        });
-
-        /**
-         * Установка команд для модуля
-         */
-        this.setCommands(
+    this.setCommands(
             HelloCommand
-        );
-    }
+    );
+  }
 }
 ```
 
-### setCommands
+### Основные методы
 
-Основной метод, который можно использовать в каждом модуле. Устанавливает доступные для текущего модуля команды.
+#### setCommands
+
+Устанавливает доступные для текущего модуля команды.
 
 ```ts
-public setCommands(...commands: Constructor<Command>[]): void
+protected setCommands(...commands: Constructor<Command>[]): void
 ```
 
-Также можно установить middleware для проверки доступа к модулю, в нашем примере идёт проверка на префикс `hello` в начале каждого сообщения, после чего обновления контекста сообщения, и дальнейшая его передача в контекст команд этого модуля. 
+#### setAccess
 
+Устанавливает условие для использование команд данного модуля.
+
+`Параметры`:
+
+* **ModuleCheckAccess**:
+  * RegExp
+  * Middleware
+    
 ```ts
-public setAccess(access: ModuleCheckAccess): void
+protected setAccess(access: ModuleCheckAccess): void
 ```
 
 ## Команды
 
-Все команды расположены в директории `./commands` каждого модуля. Разберем уже готовой команды `HelloCommand`, нашего модуля `HelloModule`, которая находится здесь `modules/Hello/commands/hello.ts`:
+Любая команда наследуется от базового класса `Command`.
+В команде устанавливается условие для её прослушки и callback функция, 
+которая вызывается, в случае, если прослушка сработала.
 
 ```ts
 import { Command, FactoryCommandOptions } from '@Main/command';
 
-import { HelloModule, IHelloModuleContext } from '@Main/modules/Hello';
+import { HelloModule } from './module';
 
-/**
- * Опции команды
- */
-export type HelloCommandOptions = 
-    FactoryCommandOptions<HelloModule, IHelloModuleContext>;
+export type HelloCommandOptions = FactoryCommandOptions<HelloModule>;
 
-/**
- * Команда модуля. Наследуется от Command
- * 
- * @argument M — Модуль, к которому подключается команда.
- * @argument S — Дополнительный контекст, который хранится в state
- */
 export class HelloCommand extends Command<
-    HelloModule,
-    IHelloModuleContext
+    HelloModule
 > {
     public constructor({ ...options }: HelloCommandOptions) {
         super({ ...options });
-
-        /**
-         * Установка прослушки для текущей команды
-         */
-        this.setHearCondition((context, next) => {
-            const { moduleAccess } = context.state;
-
-            const cRegEx = /^ping$/i;
-
-            if (!cRegEx.test(moduleAccess.unprefixed))
-                return;
-
-            return next();
-        });
         
-        /**
-         * Установка callback`а для текущей команды
-         */
+        this.setHearCondition(/^ping$/i);
+        
         this.setCallback(context => (
             context.send("pong")
         ));
@@ -183,24 +124,39 @@ export class HelloCommand extends Command<
 }
 ```
 
-У каждой команды есть два основных метода:
+### Основные методы
 
-### setHearCondition 
-Устанавливает условие для вызова `callback` функции. В качестве аргумента может принимать `Middleware` или `RegExp`.
+
+
+#### setHearCondition 
+Устанавливает условие для прослушки команды.
+
+`Параметры`:
+
+* **CommandHearCondition**
+  * RegExp
+  * Middleware
 
 ```ts
-protected setHearCondition(hearCondition: CommandHearCondition<T>): void
+protected setHearCondition(hearCondition: CommandHearCondition): void
 ```
 
-### setCallback 
-Устанавливает `callback` для команды. В качестве аргумента принимает `Middleware`.
+#### setCallback 
+Устанавливает callback функцию команды.
+
+`Параметры`:
+
+* **CommandCallback**
+    * Middleware
 
 ```ts
-protected setCallback(callback: CommandCallback<T>): void
+protected setCallback(callback: CommandCallback): void
 ```
 
-# Результат
+# Заключение
 
-Запускаем бота и проверяем его работу. Теперь если написать нашему боту сообщение с префиксом `hello` и дальнейшей командой `ping` — он ответит нам `pong`:
+Выражаю благодарность [OctopuSSX](https://github.com/uzervlad) за его [osu! бота для ВК](https://github.com/OctoDumb/osubot), который вдохновил меня на создание данного шаблона.
 
-![Пример работы команды](https://sun9-57.userapi.com/impf/Q9g5t4pSp9fcW1WSDJ4MHwyJ8e48STJB3m5kag/D3clL5_1FB4.jpg?size=203x111&quality=96&sign=a6d7769f8fe1c30fdc36eeed8be9f986&type=album)
+# License
+
+[MIT](https://github.com/SweetDreamzZz/ts-vk-bot-template/blob/master/LICENSE)

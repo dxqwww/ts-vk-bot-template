@@ -1,11 +1,11 @@
 {
   "name": "ts-vk-bot-template",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Handy template for creating VK bots",
   "main": "index.js",
   "scripts": {
     "start": "node ./dist",
-    "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist"
+    "build": "tsc && tscpaths -p tsconfig.json -s . -o ./dist"
   },
   "keywords": [
     "vk-io",
@@ -18,11 +18,12 @@
   "author": "SweetDream",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^13.13.4",
     "chalk": "^4.1.1",
     "vk-io": "^4.2.0"
   },
   "devDependencies": {
-    "tscpaths": "0.0.9"
+    "@types/node": "^15.6.0",
+    "tscpaths": "0.0.9",
+    "typescript": "^4.2.4"
   }
 }

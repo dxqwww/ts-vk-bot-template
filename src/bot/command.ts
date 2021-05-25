@@ -1,33 +1,37 @@
-import { MessageContext, ContextDefaultState } from "vk-io";
+import { ContextDefaultState } from "vk-io";
 
 import { Module } from "@Main/module";
 
-import { Middleware, MiddlewareDispatcher, MiddlewareReturn } from '@Utils/middleware';
+import { Middleware, MiddlewareDispatcher, MiddlewareReturn } from '@Main/utils/helpers';
+import { ICustomMessageContext } from "@Main/types";
 
-export type CommandHearCondition<S = ContextDefaultState> = Middleware<MessageContext<S>> | RegExp;
-export type CommandCallback<S = ContextDefaultState> = Middleware<MessageContext<S>>
+export type CommandHearCondition<S = ContextDefaultState, P = {}> = Middleware<ICustomMessageContext<S, P>> | RegExp;
+export type CommandCallback<S = ContextDefaultState, P = {}> = Middleware<ICustomMessageContext<S, P>>
 
 export interface ICommandOptions<
     M extends Module = Module,
-    S = ContextDefaultState
+    S = ContextDefaultState,
+    P = {}
 > {
     module: M
-    message: MessageContext<S>,
+    message: ICustomMessageContext<S, P>,
 
-    dispatcher: MiddlewareDispatcher<MessageContext<S>>;
+    dispatcher: MiddlewareDispatcher<ICustomMessageContext<S, P>>;
 }
 
 export type FactoryCommandOptions<
     M extends Module = Module,
-    S = ContextDefaultState
-> = ICommandOptions<M, S>;
+    S = ContextDefaultState,
+    P = {}
+> = ICommandOptions<M, S, P>;
 
 /**
  * Главный класс команды
  */
-export class Command<
+export abstract class Command<
     M extends Module = Module,
-    S = ContextDefaultState
+    S = ContextDefaultState,
+    P = {}
 > {
     
     /**
@@ -38,27 +42,27 @@ export class Command<
     /**
      * Контекст только что полученного сообщения
      */
-    protected message: MessageContext<S>
+    protected message: ICustomMessageContext<S, P>
 
     /**
      * Middleware-функция условия прослушки сообщения
      */
-    private hearCondition!: CommandHearCondition<S>;
+    private hearCondition!: CommandHearCondition<S, P>;
 
     /**
      * Middleware-функция callback'а в случае, если прослушка сработает
      */
-    private callback!: CommandCallback<S>;
+    private callback!: CommandCallback<S, P>;
 
     /**
      * Инстанция MiddlewareDispatcher
      */
-    private dispatcher: MiddlewareDispatcher<MessageContext<S>>;
+    private dispatcher: MiddlewareDispatcher<ICustomMessageContext<S, P>>;
 
     /**
      * Constructor
      */
-    public constructor({ ...options }: ICommandOptions<M, S>) {
+    public constructor({ ...options }: ICommandOptions<M, S, P>) {
         this.module = options.module;
         this.message = options.message;
 
@@ -70,10 +74,10 @@ export class Command<
      */
     public async checkHearCondition(): Promise<boolean> {
         if (!this.hearCondition)
-            return;
+            return false;
 
         if (this.hearCondition instanceof RegExp)
-            return this.hearCondition.test(this.message.text || null);
+            return this.hearCondition.test(this.message.text);
 
         await this.dispatcher.dispatchMiddleware(this.message, this.hearCondition);
 
@@ -100,14 +104,14 @@ export class Command<
     /**
      * Устанавливает middleware-функцию для прослушки
      */
-     protected setHearCondition(hearCondition: CommandHearCondition<S>): void {
+     protected setHearCondition(hearCondition: CommandHearCondition<S, P>): void {
         this.hearCondition = hearCondition;
     }
 
     /**
      * Устанавливает middleware-функцию callback`а
      */
-    protected setCallback(callback: CommandCallback<S>): void {
+    protected setCallback(callback: CommandCallback<S, P>): void {
         this.callback = callback;
     }
 }

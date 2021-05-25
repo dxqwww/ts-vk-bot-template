@@ -1,11 +1,8 @@
-import { MessageContext, VK } from 'vk-io'
+import { VK } from 'vk-io'
 
-import { Constructor, IBotConfig } from '@Main/types';
+import { Constructor, IBotConfig, ICustomMessageContext } from '@Main/types';
 import { Module } from '@Main/module';
-
-import {
-    HelloModule
-} from '@Main/modules';
+import { SweetConsole } from "@Main/utils";
 
 export interface IBotOptions<
     Config extends IBotConfig = IBotConfig
@@ -17,7 +14,7 @@ export interface IBotOptions<
  * Главный класс бота
  */
 export class Bot<
-    T extends MessageContext = MessageContext,
+    T extends ICustomMessageContext = ICustomMessageContext,
 
     Config extends IBotConfig = IBotConfig,
 > {
@@ -48,11 +45,10 @@ export class Bot<
             apiVersion: this.config.vk.api_version
         });
 
-        this.setModules(
-            HelloModule
-        );
-
         this.vk.updates.on('message_new', async (context: T) => {
+            if (!this.modules.length)
+                return SweetConsole.Warn(`${this[Symbol.toStringTag]} has no active modules!`)
+
             for (const Module of this.modules) {
                 const module = this.initModule(Module, context);
 
@@ -97,16 +93,14 @@ export class Bot<
     /**
      * Устанавливает список переданных моудлей
      */
-    protected setModules(...modules: Constructor<Module>[]): void {
-        this.modules = [
-            ...modules
-        ];
+    private setModules(...modules: Constructor<Module>[]): void {
+        this.modules = modules;
     } 
 
     /**
      * Инициализирует модуль с указанным контекстом
      */
-    protected initModule(Module: Constructor<Module>, context: T): Module {
+    private initModule(Module: Constructor<Module>, context: T): Module {
         return new Module({
             bot: this,
             message: context

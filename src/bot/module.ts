@@ -1,28 +1,30 @@
-import { MessageContext, ContextDefaultState } from "vk-io";
+import { ContextDefaultState } from "vk-io";
+
+import { Middleware, MiddlewareDispatcher, SweetConsole } from "@Main/utils";
 
 import { Bot } from "@Main/bot";
 import { Command } from "@Main/command";
-import { Constructor } from '@Main/types';
-
-import { Middleware, MiddlewareDispatcher } from "@Utils/middleware";
+import { Constructor, ICustomMessageContext } from '@Main/types';
 
 export interface IModuleOptions<
-    S = ContextDefaultState
+    S = ContextDefaultState,
+    P = {}
 > {
-    message: MessageContext<S>
+    message: ICustomMessageContext<S, P>
 
     bot: Bot;
 }
 
-export type FactoryModuleOptions<S = ContextDefaultState> = IModuleOptions<S>;
+export type FactoryModuleOptions<S = ContextDefaultState, P = {}> = IModuleOptions<S, P>;
 
-export type ModuleCheckAccess<S = ContextDefaultState> = Middleware<MessageContext<S>>
+export type ModuleCheckAccess<S = ContextDefaultState, P = {}> = Middleware<ICustomMessageContext<S, P>>
 
 /**
  * Главный класс модуля
  */
-export class Module<
-    S = ContextDefaultState
+export abstract class Module<
+    S = ContextDefaultState,
+    P = {}
 > {
 
     /**
@@ -33,12 +35,12 @@ export class Module<
     /**
      * Контекст только что полученного сообщения
      */
-    protected message: MessageContext<S>;
+    protected message: ICustomMessageContext<S, P>;
 
     /**
      * Middleware-функция, которая проверяет доступ к модулю
      */
-    private access: ModuleCheckAccess<S>;
+    private access: ModuleCheckAccess<S, P>;
 
     /**
      * Список команд модуля
@@ -48,25 +50,16 @@ export class Module<
     /**
      * Инстанция MiddlwareDispatcher
      */
-     private dispatcher: MiddlewareDispatcher<MessageContext<S>>;
+     private dispatcher: MiddlewareDispatcher<ICustomMessageContext<S, P>>;
 
     /**
      * Constructor
      */
-    public constructor({ ...options }: IModuleOptions<S>) {
+    public constructor({ ...options }: IModuleOptions<S, P>) {
         this.bot = options.bot;
         this.message = options.message;
 
-        this.dispatcher = new MiddlewareDispatcher<MessageContext<S>>()
-    }
-
-    /**
-     * Устанавливает список переданных команд 
-     */
-    public setCommands(...commands: Constructor<Command>[]): void {
-        this.commands = [
-            ...commands
-        ];
+        this.dispatcher = new MiddlewareDispatcher<ICustomMessageContext<S, P>>()
     }
 
     /**
@@ -76,7 +69,13 @@ export class Module<
         const cHasAccess = await this.contextHasAccess();
 
         if (!cHasAccess)
-            return;
+            return null;
+
+        if (!this.commands.length)
+        {
+            SweetConsole.Warn(`${this[Symbol.toStringTag]} has no active commands!`)
+            return null;
+        }
 
         for (const Command of this.commands) {
             const command = this.initCommand(Command);
@@ -89,20 +88,27 @@ export class Module<
             return command;
         }
     }
-    
+
+    /**
+     * Returns custom tag
+     */
+    public get [Symbol.toStringTag](): string {
+        return this.constructor.name;
+    }
+
+    /**
+     * Устанавливает список переданных команд
+     */
+    protected setCommands(...commands: Constructor<Command>[]): void {
+        this.commands = commands;
+    }
+
     /**
      * Устанавливает Middleware-функцию, которая проверяет доступ к модулю
      */
-     public setAccess(access: ModuleCheckAccess<S>): void {
+     protected setAccess(access: ModuleCheckAccess<S, P>): void {
         this.access = access;
     }
-
-	/**
-	 * Returns custom tag
-	 */
-     public get [Symbol.toStringTag](): string {
-		return this.constructor.name;
-	}
 
     /**
      * Инициализирует команду модуля
