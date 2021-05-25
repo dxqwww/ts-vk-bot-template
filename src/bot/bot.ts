@@ -3,7 +3,6 @@ import { VK } from 'vk-io'
 import { Constructor, IBotConfig, ICustomMessageContext } from '@Main/types';
 import { Module } from '@Main/module';
 import { SweetConsole } from "@Main/utils";
-import { HelloModule } from "../../examples/module";
 
 export interface IBotOptions<
     Config extends IBotConfig = IBotConfig
@@ -45,8 +44,6 @@ export class Bot<
             pollingGroupId: Number(this.config.vk.group_id),
             apiVersion: this.config.vk.api_version
         });
-
-        this.setModules(HelloModule);
 
         this.vk.updates.on('message_new', async (context: T) => {
             if (!this.modules.length)
