@@ -12,7 +12,7 @@ export interface IBotOptions<
 }
 
 /**
- * Главный класс бота
+ * Bot
  */
 export class Bot<
     T extends ICustomMessageContext = ICustomMessageContext,
@@ -20,24 +20,24 @@ export class Bot<
     Config extends IBotConfig = IBotConfig,
 > {
     /**
-     * Конфигурация бота
+     * Bot configuration
      */
     public config: IBotConfig;
 
     /**
-     * Инстанция vk-io
+     * VK
      */
     public vk: VK;
 
     /**
-     * Список всех доступных модулей
+     * List of modules
      */
     private modules: Constructor<Module>[] = [];
 
     /**
      * Constructor
      */
-    public constructor({ ...options }: IBotOptions<Config>) {
+    public constructor(options: IBotOptions<Config>) {
         this.config = options.config;
 
         this.vk = new VK({
@@ -66,42 +66,42 @@ export class Bot<
     }
 
     /**
-     * Проверяет запущена ли прослушка
+     * Checks is started
      */
     public get isStarted(): boolean {
         return this.vk.updates.isStarted;
     }
 
     /**
-     * Запускаеет прослушку сообщений
+     * Starts listening updates
      */
     public start(): Promise<void> {
         return this.vk.updates.start();
     }
 
     /**
-     * Прекращает получение обновлений
+     * Stops listening updates
      */
     public stop(): Promise<void> {
         return this.vk.updates.stop();
     }
 
 	/**
-	 * Возвращает кастомный тег
+	 * Returns custom tag
 	 */
      public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}
 
     /**
-     * Устанавливает список переданных моудлей
+     * Sets the modules
      */
     private setModules(...modules: Constructor<Module>[]): void {
         this.modules = modules;
     } 
 
     /**
-     * Инициализирует модуль с указанным контекстом
+     * Returns the instance of module
      */
     private initModule(Module: Constructor<Module>, context: T): Module {
         return new Module({

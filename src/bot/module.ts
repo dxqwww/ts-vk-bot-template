@@ -20,7 +20,7 @@ export type FactoryModuleOptions<S = ContextDefaultState, P = {}> = IModuleOptio
 export type ModuleCheckAccess<S = ContextDefaultState, P = {}> = Middleware<ICustomMessageContext<S, P>>
 
 /**
- * Главный класс модуля
+ * Module
  */
 export abstract class Module<
     S = ContextDefaultState,
@@ -28,42 +28,32 @@ export abstract class Module<
 > {
 
     /**
-     * Инстанция Bot
+     * Bot
      */
     public bot: Bot;
 
     /**
-     * Контекст только что полученного сообщения
+     * Message context
      */
     protected message: ICustomMessageContext<S, P>;
 
     /**
-     * Middleware-функция, которая проверяет доступ к модулю
+     * Module's access middleware
      */
     private access!: ModuleCheckAccess<S, P>;
 
     /**
-     * Список команд модуля
+     * List of module's commands
      */
     private commands: Constructor<Command>[] = [];
 
     /**
-     * Инстанция MiddlwareDispatcher
+     * Middleware dispatcher
      */
      private dispatcher: MiddlewareDispatcher<ICustomMessageContext<S, P>>;
 
     /**
-     * Constructor
-     */
-    public constructor({ ...options }: IModuleOptions<S, P>) {
-        this.bot = options.bot;
-        this.message = options.message;
-
-        this.dispatcher = new MiddlewareDispatcher<ICustomMessageContext<S, P>>()
-    }
-
-    /**
-     * Ищет команду, которая может быть прослушена с текущем контекстом сообщения
+     * Looking for a command that can be listen
      */
     public async findCommand(): Promise<Command | undefined> {
         const cHasAccess = await this.contextHasAccess();
@@ -97,21 +87,31 @@ export abstract class Module<
     }
 
     /**
-     * Устанавливает список переданных команд
+     * Constructor
+     */
+    protected constructor(options: IModuleOptions<S, P>) {
+        this.bot = options.bot;
+        this.message = options.message;
+
+        this.dispatcher = new MiddlewareDispatcher<ICustomMessageContext<S, P>>()
+    }
+
+    /**
+     * Sets the list of module's commands
      */
     protected setCommands(...commands: Constructor<Command>[]): void {
         this.commands = commands;
     }
 
     /**
-     * Устанавливает Middleware-функцию, которая проверяет доступ к модулю
+     * Sets the module's access middleware
      */
      protected setAccess(access: ModuleCheckAccess<S, P>): void {
         this.access = access;
     }
 
     /**
-     * Инициализирует команду модуля
+     * Returns the instance of command
      */
     private initCommand(Command: Constructor<Command>): Command {
         if (this.dispatcher.hasMiddlewares)
@@ -126,7 +126,7 @@ export abstract class Module<
     }
 
     /**
-     * Проверяет есть ли у контекста сообщения доуступ к модулю
+     * Checks message context for access to module
      */
     private async contextHasAccess(): Promise<boolean> {
         if (!this.access)

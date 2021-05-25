@@ -26,7 +26,7 @@ export type FactoryCommandOptions<
 > = ICommandOptions<M, S, P>;
 
 /**
- * Главный класс команды
+ * Command
  */
 export abstract class Command<
     M extends Module = Module,
@@ -35,42 +35,32 @@ export abstract class Command<
 > {
     
     /**
-     * Инстанция модуля команды
+     * Module
      */
     public module: M;
 
     /**
-     * Контекст только что полученного сообщения
+     * Message context
      */
     protected message: ICustomMessageContext<S, P>
 
     /**
-     * Middleware-функция условия прослушки сообщения
+     * Hear condition
      */
     private hearCondition!: CommandHearCondition<S, P>;
 
     /**
-     * Middleware-функция callback'а в случае, если прослушка сработает
+     * Callback
      */
     private callback!: CommandCallback<S, P>;
 
     /**
-     * Инстанция MiddlewareDispatcher
+     * Middleware dispatcher
      */
     private dispatcher: MiddlewareDispatcher<ICustomMessageContext<S, P>>;
 
     /**
-     * Constructor
-     */
-    public constructor({ ...options }: ICommandOptions<M, S, P>) {
-        this.module = options.module;
-        this.message = options.message;
-
-        this.dispatcher = options.dispatcher;
-    }
-
-    /**
-     * Проверяет может ли контекст быть прослушанным
+     * Check the message context for hear condition
      */
     public async checkHearCondition(): Promise<boolean> {
         if (!this.hearCondition)
@@ -85,7 +75,7 @@ export abstract class Command<
     }
 
     /**
-     * Вызывает middleware-функцию функцию callback'а
+     * Invokes callback
      */
     public async invokeCallback(): Promise<MiddlewareReturn> {
         if (this.dispatcher.hasMiddlewares)
@@ -102,14 +92,24 @@ export abstract class Command<
 	}
 
     /**
-     * Устанавливает middleware-функцию для прослушки
+     * Constructor
+     */
+    protected constructor(options : ICommandOptions<M, S, P>) {
+        this.module = options.module;
+        this.message = options.message;
+
+        this.dispatcher = options.dispatcher;
+    }
+
+    /**
+     * Sets the middleware for hear condition
      */
      protected setHearCondition(hearCondition: CommandHearCondition<S, P>): void {
         this.hearCondition = hearCondition;
     }
 
     /**
-     * Устанавливает middleware-функцию callback`а
+     * Sets the callback middleware
      */
     protected setCallback(callback: CommandCallback<S, P>): void {
         this.callback = callback;
