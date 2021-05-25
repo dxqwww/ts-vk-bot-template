@@ -40,12 +40,12 @@ export abstract class Module<
     /**
      * Middleware-функция, которая проверяет доступ к модулю
      */
-    private access: ModuleCheckAccess<S, P>;
+    private access!: ModuleCheckAccess<S, P>;
 
     /**
      * Список команд модуля
      */
-    private commands: Constructor<Command>[];
+    private commands: Constructor<Command>[] = [];
 
     /**
      * Инстанция MiddlwareDispatcher
@@ -65,16 +65,16 @@ export abstract class Module<
     /**
      * Ищет команду, которая может быть прослушена с текущем контекстом сообщения
      */
-    public async findCommand(): Promise<Command> {
+    public async findCommand(): Promise<Command | undefined> {
         const cHasAccess = await this.contextHasAccess();
 
         if (!cHasAccess)
-            return null;
+            return;
 
         if (!this.commands.length)
         {
             SweetConsole.Warn(`${this[Symbol.toStringTag]} has no active commands!`)
-            return null;
+            return;
         }
 
         for (const Command of this.commands) {

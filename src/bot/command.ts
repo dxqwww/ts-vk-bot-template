@@ -77,7 +77,7 @@ export abstract class Command<
             return false;
 
         if (this.hearCondition instanceof RegExp)
-            return this.hearCondition.test(this.message.text);
+            return this.hearCondition.test(this.message.text || '');
 
         await this.dispatcher.dispatchMiddleware(this.message, this.hearCondition);
 

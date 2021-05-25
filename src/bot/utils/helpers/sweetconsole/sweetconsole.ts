@@ -23,6 +23,11 @@ export class SweetConsole {
         return SweetConsole.log(chalk.cyan, `INFO`, message);
     }
 
+    public static Message(message: string): typeof SweetConsole
+    {
+        return SweetConsole.log(chalk.blueBright, `MESSAGE`, message);
+    }
+
     public static Warn(message: string): typeof SweetConsole {
         return SweetConsole.log(chalk.yellow, `WARN`, message);
     }

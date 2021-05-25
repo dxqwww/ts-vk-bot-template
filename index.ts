@@ -11,10 +11,10 @@ import chalk from "chalk";
 
     console.log(chalk.blueBright(`\n\n${_PROJECT_INFO.ascii_art}\n\n`));
 
-    SweetConsole.Warn(`Thanks for using ${_PROJECT_INFO.name}!`)
-                .Warn(`Version: ${_PROJECT_INFO.version}`)
-                .Warn(`Author: ${_PROJECT_INFO.author}`)
-                .Warn(`If you notice any bug, please report it: https://github.com/${_PROJECT_INFO.author}/${_PROJECT_INFO.name}/issues`);
+    SweetConsole.Message(`Thanks for using ${_PROJECT_INFO.name}!`)
+                .Message(`Version: ${_PROJECT_INFO.version}`)
+                .Message(`Author: ${_PROJECT_INFO.author}`)
+                .Message(`If you notice any bug, please report it: https://github.com/${_PROJECT_INFO.author}/${_PROJECT_INFO.name}/issues`);
 
     try {
         SweetConsole.Info(`Bot is starting...`);
