@@ -10,7 +10,7 @@
 Чтобы начать использовать шаблон необходимо клонировать этот репозиторий к себе и установить все зависимости:
 
 ```
-git clone https://github.com/SweetDreamzZz/ts-vk-bot-template
+git clone https://github.com/dxqwww/ts-vk-bot-template
 npm install
 ```
 
